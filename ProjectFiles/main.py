@@ -9,8 +9,9 @@ bot = telebot.TeleBot("6798262829:AAGlgaecBZRfuJOTckQhbfbZzRFi1KxB8_Y")
 @bot.message_handler(commands=['start'])
 def start(message):
     DataBaseHelper.create_tables()
-    username = message.from_user.first_name  # Получение имени пользователя
-    DataBaseHelper.add_user(username)  # Добавление пользователя в базу данных
+    username = message.from_user.username  # Получение имени пользователя
+    if not DataBaseHelper.user_exists(username):  # Проверка на существование пользователя
+        DataBaseHelper.add_user(username)  # Добавление пользователя в базу данных
 
     markup = types.InlineKeyboardMarkup(row_width=2)
     btn1 = types.InlineKeyboardButton('Список товаров', callback_data='good_list')

@@ -55,6 +55,13 @@ class DataBaseHelper:
             conn.commit()
 
     @classmethod
+    def user_exists(cls, username):
+        with cls.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM Users WHERE username = ?", (username,))
+            return cursor.fetchone() is not None
+
+    @classmethod
     def add_product(cls, product_name, product_url, product_image_url, current_price):
         with cls.get_connection() as conn:
             cursor = conn.cursor()
