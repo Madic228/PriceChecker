@@ -1,5 +1,6 @@
 import telebot
 from telebot import types
+import DataBaseHelper
 
 bot = telebot.TeleBot("6798262829:AAGlgaecBZRfuJOTckQhbfbZzRFi1KxB8_Y")
 
@@ -17,10 +18,13 @@ def start(message):
 @bot.callback_query_handler(func=lambda callback: True)
 def callback_message(callback):
     if callback.data == 'good_list':
+        bot.delete_message(callback.message.chat.id, callback.message.message_id)
         bot.send_message(callback.message.chat.id,'вот список всех ваших товаров:')
     if callback.data == 'add_good':
+        bot.delete_message(callback.message.chat.id, callback.message.message_id)
         bot.send_message(callback.message.chat.id, 'Введите URI товара на sbermegamarket:')
     if callback.data == 'delete_all':
+        bot.delete_message(callback.message.chat.id, callback.message.message_id)
         bot.send_message(callback.message.chat.id, 'Все товары удалены:')
 
 @bot.message_handler(commands=['goodlist'])
