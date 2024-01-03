@@ -6,6 +6,8 @@ bot = telebot.TeleBot("6798262829:AAGlgaecBZRfuJOTckQhbfbZzRFi1KxB8_Y")
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    DataBaseHelper.create_tables()
+    DataBaseHelper.add_user(message.from_user.username)
     markup = types.InlineKeyboardMarkup(row_width=2)
     btn1 = types.InlineKeyboardButton('Список товаров', callback_data='good_list')
     btn2 = types.InlineKeyboardButton('Добавить товары', callback_data='add_good')
