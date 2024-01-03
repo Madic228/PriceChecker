@@ -2,80 +2,83 @@ import sqlite3
 
 
 class DataBaseHelper:
-    def __init__(self, db_name="PriceCheckerDB.sql"):
-        self.conn = sqlite3.connect(db_name)
-        self.cursor = self.conn.cursor()
 
-    def create_tables(self):
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Users (
-                user_id INT PRIMARY KEY,
-                username VARCHAR
-            );
-        ''')
+    @staticmethod
+    def get_connection(db_name="PriceCheckerDB.sql"):
+        return sqlite3.connect(db_name)
 
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS Products (
-                product_id INT PRIMARY KEY,
-                product_name VARCHAR,
-                product_url VARCHAR,
-                product_image_url VARCHAR,
-                current_price DECIMAL
-            );
-        ''')
+    @classmethod
+    def create_tables(cls):
+        with cls.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS Users (
+                    user_id INTEGER PRIMARY KEY,
+                    username VARCHAR
+                );
+            ''')
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS Products (
+                    product_id INTEGER PRIMARY KEY,
+                    product_name VARCHAR,
+                    product_url VARCHAR,
+                    product_image_url VARCHAR,
+                    current_price DECIMAL
+                );
+            ''')
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS TrackedProducts (
+                    tracked_id INTEGER PRIMARY KEY,
+                    user_id INTEGER,
+                    product_id INTEGER,
+                    tracking_date DATE,
+                    FOREIGN KEY (user_id) REFERENCES Users (user_id),
+                    FOREIGN KEY (product_id) REFERENCES Products (product_id)
+                );
+            ''')
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS PriceHistory (
+                    price_history_id INTEGER PRIMARY KEY,
+                    product_id INTEGER,
+                    date_recorded DATE,
+                    price DECIMAL,
+                    FOREIGN KEY (product_id) REFERENCES Products (product_id)
+                );
+            ''')
+            conn.commit()
 
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS TrackedProducts (
-                tracked_id INT PRIMARY KEY,
-                user_id INT,
-                product_id INT,
-                tracking_date DATE,
-                FOREIGN KEY (user_id) REFERENCES Users (user_id),
-                FOREIGN KEY (product_id) REFERENCES Products (product_id)
-            );
-        ''')
+    @classmethod
+    def add_user(cls, username):
+        with cls.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO Users (username) VALUES (?)", (username,))
+            conn.commit()
 
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS PriceHistory (
-                price_history_id INT PRIMARY KEY,
-                product_id INT,
-                date_recorded DATE,
-                price DECIMAL,
-                FOREIGN KEY (product_id) REFERENCES Products (product_id)
-            );
-        ''')
+    @classmethod
+    def add_product(cls, product_name, product_url, product_image_url, current_price):
+        with cls.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO Products (product_name, product_url, product_image_url, current_price) VALUES (?, ?, ?, ?)",
+                (product_name, product_url, product_image_url, current_price))
+            conn.commit()
 
-        self.conn.commit()
+    @classmethod
+    def track_product(cls, user_id, product_id, tracking_date):
+        with cls.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO TrackedProducts (user_id, product_id, tracking_date) VALUES (?, ?, ?)",
+                           (user_id, product_id, tracking_date))
+            conn.commit()
 
-    # Дополнительные функции для работы с базой данных
-    # Например, добавление пользователя, добавление товара для отслеживания, обновление цен и т.д.
-
-    def add_user(self, user_id, username):
-        self.cursor.execute("INSERT INTO Users (user_id, username) VALUES (?, ?)", (user_id, username))
-        self.conn.commit()
-
-    def add_product(self, product_id, product_name, product_url, product_image_url, current_price):
-        self.cursor.execute(
-            "INSERT INTO Products (product_id, product_name, product_url, product_image_url, current_price) VALUES (?, ?, ?, ?, ?)",
-            (product_id, product_name, product_url, product_image_url, current_price))
-        self.conn.commit()
-
-    def track_product(self, user_id, product_id, tracking_date):
-        self.cursor.execute("INSERT INTO TrackedProducts (user_id, product_id, tracking_date) VALUES (?, ?, ?)",
-                            (user_id, product_id, tracking_date))
-        self.conn.commit()
-
-    def update_price(self, product_id, new_price):
-        self.cursor.execute("UPDATE Products SET current_price = ? WHERE product_id = ?", (new_price, product_id))
-        self.conn.commit()
-
-    # Добавьте здесь дополнительные функции по мере необходимости
-
-    def __del__(self):
-        self.conn.close()
-
+    @classmethod
+    def update_price(cls, product_id, new_price):
+        with cls.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE Products SET current_price = ? WHERE product_id = ?", (new_price, product_id))
+            conn.commit()
 
 # Пример использования
-#db_helper = DataBaseHelper()
-#db_helper.create_tables()
-# Далее можно использовать функции для добавления пользователей, товаров и т.д.
+# DataBaseHelper.create_tables()
+# DataBaseHelper.add_user('JohnDoe')
+# Далее можно использовать другие функции для добавления товаров и т.д.
