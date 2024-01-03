@@ -1,17 +1,11 @@
 import telebot
 from telebot import types
-
-from ProjectFiles.db.DataBaseHelper import DataBaseHelper
-
+import DataBaseHelper
 
 bot = telebot.TeleBot("6798262829:AAGlgaecBZRfuJOTckQhbfbZzRFi1KxB8_Y")
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    DataBaseHelper.create_tables()
-    username = message.from_user.first_name  # Получение имени пользователя
-    DataBaseHelper.add_user(username)  # Добавление пользователя в базу данных
-
     markup = types.InlineKeyboardMarkup(row_width=2)
     btn1 = types.InlineKeyboardButton('Список товаров', callback_data='good_list')
     btn2 = types.InlineKeyboardButton('Добавить товары', callback_data='add_good')
