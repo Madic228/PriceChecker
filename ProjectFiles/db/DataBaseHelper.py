@@ -4,7 +4,7 @@ import sqlite3
 class DataBaseHelper:
 
     @staticmethod
-    def get_connection(db_name="PriceCheckerDB.sql"):
+    def get_connection(db_name="PriceCheckerDB.db"):
         return sqlite3.connect(db_name)
 
     @classmethod
