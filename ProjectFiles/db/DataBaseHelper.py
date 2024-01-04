@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 
 class DataBaseHelper:
@@ -71,6 +72,14 @@ class DataBaseHelper:
             conn.commit()
 
     @classmethod
+    def product_exists(cls, product_name, product_url):
+        with cls.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM Products WHERE product_name = ? OR product_url = ?",
+                           (product_name, product_url))
+            return cursor.fetchone() is not None
+
+    @classmethod
     def track_product(cls, user_id, product_id, tracking_date):
         with cls.get_connection() as conn:
             cursor = conn.cursor()
@@ -83,6 +92,31 @@ class DataBaseHelper:
         with cls.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("UPDATE Products SET current_price = ? WHERE product_id = ?", (new_price, product_id))
+            conn.commit()
+
+    @classmethod
+    def get_current_price(cls, product_url):
+        with cls.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT current_price FROM Products WHERE product_url = ?", (product_url,))
+            result = cursor.fetchone()
+            return result[0] if result else None
+
+    @classmethod
+    def update_price(cls, product_url, new_price):
+        with cls.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE Products SET current_price = ? WHERE product_url = ?", (new_price, product_url))
+            conn.commit()
+
+    @classmethod
+    def add_price_history(cls, product_url, price):
+        with cls.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT product_id FROM Products WHERE product_url = ?", (product_url,))
+            product_id = cursor.fetchone()[0]
+            cursor.execute("INSERT INTO PriceHistory (product_id, date_recorded, price) VALUES (?, ?, ?)",
+                           (product_id, datetime.now().date(), price))
             conn.commit()
 
 # Пример использования
